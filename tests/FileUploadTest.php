@@ -176,4 +176,26 @@ class FileUploadTest extends TestCase
         $this->assertStringEqualsFile($destination, 'test data');
         @unlink($destination);
     }
+
+    public function testToArray(): void
+    {
+        /** @var UploadedFile */
+        $expected = [
+            'name' => 'test.jpg',
+            'type' => 'image/jpeg',
+            'size' => 1024,
+            'tmp_name' => '/tmp/test',
+            'error' => UPLOAD_ERR_OK,
+        ];
+
+        $upload = FileUpload::create($expected);
+        $this->assertInstanceOf(FileUpload::class, $upload);
+
+        $actual = $upload->toArray();
+        $this->assertEquals($expected, $actual);
+
+        // Check that it works in the same way in error cases
+        $errorUpload = new ErrorFileUpload($expected, 'Test error');
+        $this->assertEquals($expected, $errorUpload->toArray());
+    }
 }

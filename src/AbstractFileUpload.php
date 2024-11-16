@@ -43,4 +43,20 @@ abstract class AbstractFileUpload
         $this->error = $fileData['error'];
         $this->extension = pathinfo($this->name, PATHINFO_EXTENSION);
     }
+
+    /**
+     * Returns the file data as an array in $_FILES format
+     *
+     * @return UploadedFile
+     */
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'type' => $this->type,
+            'size' => $this->size,
+            'tmp_name' => $this->tmpName,
+            'error' => $this->error,
+        ];
+    }
 }

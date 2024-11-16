@@ -1,11 +1,11 @@
-# FileUpload
+# Koriym.FileUpload
 
 Type-safe file upload handling with immutable value objects
 
 ## Installation
 
 ```bash
-composer require vendor/file-upload
+composer require koriym/file-upload
 ```
 
 ## Usage

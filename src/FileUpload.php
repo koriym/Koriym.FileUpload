@@ -7,10 +7,12 @@ namespace Koriym\FileUpload;
 use function in_array;
 use function move_uploaded_file;
 use function pathinfo;
+use function rename;
 use function sprintf;
 use function str_starts_with;
 
 use const PATHINFO_EXTENSION;
+use const PHP_SAPI;
 use const UPLOAD_ERR_NO_FILE;
 use const UPLOAD_ERR_OK;
 
@@ -88,10 +90,23 @@ class FileUpload extends AbstractFileUpload
         return new self($fileData, $validationOptions);
     }
 
-    /** @psalm-external-mutation-free */
+    /**
+     * Move uploaded file to new destination
+     *
+     * Use move_uploaded_file() in web environment for security.
+     * In CLI environment (testing), use rename() instead.
+     *
+     * @see https://www.php.net/manual/function.move-uploaded-file.php
+     * @see https://www.php.net/manual/function.rename.php
+     * @psalm-external-mutation-free
+     */
     public function move(string $destination): bool
     {
-        return move_uploaded_file($this->tmpName, $destination);
+        if (PHP_SAPI === 'cli') {
+            return rename($this->tmpName, $destination);
+        }
+
+        return move_uploaded_file($this->tmpName, $destination); // @codeCoverageIgnore
     }
 
     /** @psalm-pure */

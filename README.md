@@ -52,6 +52,25 @@ You can pass the following validation options to `create()`:
 - `allowedTypes`: Array of allowed MIME types
 - `allowedExtensions`: Array of allowed file extensions
 
+## Testing
+
+The `move()` method behaves differently in CLI and web environments:
+- In web environment: Uses `move_uploaded_file()` for security
+- In CLI environment (testing): Uses `rename()` for testability
+
+```php
+// Test environment
+$upload = FileUpload::create([
+    'name' => 'test.jpg',
+    'type' => 'image/jpeg',
+    'size' => 1024,
+    'tmp_name' => '/path/to/temp/file',
+    'error' => UPLOAD_ERR_OK
+]);
+
+$result = $upload->move('./uploads/test.jpg');
+```
+
 ## Requirements
 
 - PHP 8.1+
@@ -62,17 +81,9 @@ MIT
 
 ## Additional Information
 
-### PHP's `$_FILES` Structure
-
-For a simple file upload:
-```html
-<form method="POST" enctype="multipart/form-data">
-    <input type="file" name="avatar">
-</form>
-```
-
+PHP's `$_FILES` structure:
 ```php
-$_FILES['avatar'] = [
+$_FILES['upload'] = [
     'name'      => 'profile.jpg',      // Original filename
     'type'      => 'image/jpeg',       // MIME type
     'size'      => 12345,              // File size in bytes
@@ -98,8 +109,7 @@ $_FILES['images'] = [
 ];
 ```
 
-### PHP Upload Error Codes
-
+PHP Upload Error Codes:
 ```php
 UPLOAD_ERR_OK         // 0: Success
 UPLOAD_ERR_INI_SIZE   // 1: Exceeds upload_max_filesize in php.ini

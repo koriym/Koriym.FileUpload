@@ -4,39 +4,53 @@ declare(strict_types=1);
 
 namespace Koriym\FileUpload;
 
-use const UPLOAD_ERR_CANT_WRITE;
-use const UPLOAD_ERR_EXTENSION;
-use const UPLOAD_ERR_FORM_SIZE;
+use PHPUnit\Framework\TestCase;
+
 use const UPLOAD_ERR_INI_SIZE;
-use const UPLOAD_ERR_NO_FILE;
-use const UPLOAD_ERR_NO_TMP_DIR;
-use const UPLOAD_ERR_PARTIAL;
 
-/**
- * @psalm-import-type UploadedFile from AbstractFileUpload
- * @psalm-immutable
- */
-class ErrorFileUpload extends AbstractFileUpload
+/** @psalm-import-type UploadedFile from AbstractFileUpload */
+class ErrorFileUploadTest extends TestCase
 {
-    private const ERROR_MESSAGES = [
-        UPLOAD_ERR_INI_SIZE => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
-        UPLOAD_ERR_FORM_SIZE => 'The uploaded file exceeds the MAX_FILE_SIZE directive in the HTML form',
-        UPLOAD_ERR_PARTIAL => 'The uploaded file was only partially uploaded',
-        UPLOAD_ERR_NO_FILE => 'No file was uploaded',
-        UPLOAD_ERR_NO_TMP_DIR => 'Missing a temporary folder',
-        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
-        UPLOAD_ERR_EXTENSION => 'A PHP extension stopped the file upload',
-    ];
+    /** @var UploadedFile */
+    private array $fileData;
 
-    /** @param UploadedFile $fileData */
-    public function __construct(
-        array $fileData,
-        public string|null $message = null,
-    ) {
-        parent::__construct($fileData);
+    protected function setUp(): void
+    {
+        $this->fileData = [
+            'name' => 'test.jpg',
+            'type' => 'image/jpeg',
+            'size' => 1024,
+            'tmp_name' => '/tmp/phpXXXXXX',
+            'error' => UPLOAD_ERR_INI_SIZE,
+        ];
+    }
 
-        if ($this->message === null && isset(self::ERROR_MESSAGES[$this->error])) {
-            $this->message = self::ERROR_MESSAGES[$this->error];
-        }
+    public function testErrorMessage(): void
+    {
+        $upload = new ErrorFileUpload($this->fileData);
+
+        $this->assertStringContainsString('upload_max_filesize', $upload->message);
+    }
+
+    public function testCustomErrorMessage(): void
+    {
+        $customMessage = 'Custom error message';
+        $upload = new ErrorFileUpload($this->fileData, $customMessage);
+
+        $this->assertEquals($customMessage, $upload->message);
+    }
+
+    public function testNormalErrorCode(): void
+    {
+        $message = 'Something went wrong';
+        /** @var UploadedFile */
+        $data = [
+            ...$this->fileData,
+            'error' => 999, // Unknown error code
+        ];
+
+        $upload = new ErrorFileUpload($data, $message);
+
+        $this->assertEquals($message, $upload->message);
     }
 }

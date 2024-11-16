@@ -6,6 +6,11 @@ namespace Koriym\FileUpload;
 
 use PHPUnit\Framework\TestCase;
 
+use function file_put_contents;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
+
 use const UPLOAD_ERR_INI_SIZE;
 use const UPLOAD_ERR_OK;
 
@@ -47,7 +52,7 @@ class FileUploadTest extends TestCase
         /** @var array{name: string} */
         $invalidFileData = [
             'name' => 'test.jpg',
-            // completely invalid data
+            // missing required fields
         ];
 
         $upload = FileUpload::create($invalidFileData);
@@ -137,5 +142,34 @@ class FileUploadTest extends TestCase
         $nonImageUpload = FileUpload::create($nonImageData);
         $this->assertInstanceOf(FileUpload::class, $nonImageUpload);
         $this->assertFalse($nonImageUpload->isImage());
+    }
+
+    /**
+     * Note: move_uploaded_file() only works with actual uploaded files.
+     */
+    public function testMove(): void
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'upload_test');
+        file_put_contents($tmpFile, 'test data');
+
+        /** @var UploadedFile */
+        $fileData = [
+            'name' => 'test.jpg',
+            'type' => 'image/jpeg',
+            'size' => 1024,
+            'tmp_name' => $tmpFile,
+            'error' => UPLOAD_ERR_OK,
+        ];
+
+        $upload = FileUpload::create($fileData);
+        $this->assertInstanceOf(FileUpload::class, $upload);
+
+        $destination = sys_get_temp_dir() . '/moved_test.jpg';
+        $result = $upload->move($destination);
+
+        $this->assertTrue($result);
+        $this->assertFileExists($destination);
+        $this->assertStringEqualsFile($destination, 'test data');
+        @unlink($destination);
     }
 }

@@ -1,5 +1,11 @@
 # Koriym.FileUpload
 
+[![codecov](https://codecov.io/gh/koriym/Koriym.FileUpload/graph/badge.svg?token=pIO7F7vXQR)](https://codecov.io/gh/koriym/Koriym.FileUpload)
+[![Type Coverage](https://shepherd.dev/github/koriym/Koriym.FileUpload/coverage.svg)](https://shepherd.dev/github/koriym/Koriym.FileUpload)
+[![Psalm Level](https://shepherd.dev/github/koriym/Koriym.FileUpload/level.svg)](https://shepherd.dev/github/koriym/Koriym.FileUpload)
+[![Continuous Integration](https://github.com/koriym/Koriym.FileUpload/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/koriym/Koriym.FileUpload/actions/workflows/continuous-integration.yml)
+
+
 Type-safe file upload handling with immutable value objects.
 
 ## Installation

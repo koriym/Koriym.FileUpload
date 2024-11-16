@@ -58,7 +58,7 @@ class FileUploadTest extends TestCase
         $upload = FileUpload::create($invalidFileData);
 
         $this->assertInstanceOf(ErrorFileUpload::class, $upload);
-        $this->assertEquals('Invalid file data structure', $upload->message);
+        $this->assertEquals('Invalid file data structure', (string) $upload->message);
     }
 
     public function testCreateWithUploadError(): void
@@ -72,10 +72,10 @@ class FileUploadTest extends TestCase
         $upload = FileUpload::create($fileDataWithError);
 
         $this->assertInstanceOf(ErrorFileUpload::class, $upload);
-        $this->assertStringContainsString('upload_max_filesize', $upload->message);
+        $this->assertStringContainsString('upload_max_filesize', (string) $upload->message);
     }
 
-    /** @return array<string, array{options: array}> */
+    /** @return array<ValidationOptions> */
     public function validationOptionsProvider(): array
     {
         return [
@@ -85,7 +85,11 @@ class FileUploadTest extends TestCase
         ];
     }
 
-    /** @dataProvider validationOptionsProvider */
+    /**
+     * @param ValidationOptions $options
+     *
+     * @dataProvider validationOptionsProvider
+     */
     public function testValidationFails(array $options): void
     {
         $upload = FileUpload::create($this->validFileData, $options);
@@ -102,7 +106,7 @@ class FileUploadTest extends TestCase
         $upload = FileUpload::create($this->validFileData, $options);
 
         $this->assertInstanceOf(ErrorFileUpload::class, $upload);
-        $this->assertStringContainsString('exceeds maximum allowed size', $upload->message);
+        $this->assertStringContainsString('exceeds maximum allowed size', (string) $upload->message);
     }
 
     public function testValidationAllowedTypes(): void
@@ -113,7 +117,7 @@ class FileUploadTest extends TestCase
         $upload = FileUpload::create($this->validFileData, $options);
 
         $this->assertInstanceOf(ErrorFileUpload::class, $upload);
-        $this->assertStringContainsString('type image/jpeg is not allowed', $upload->message);
+        $this->assertStringContainsString('type image/jpeg is not allowed', (string) $upload->message);
     }
 
     public function testValidationAllowedExtensions(): void
@@ -124,7 +128,7 @@ class FileUploadTest extends TestCase
         $upload = FileUpload::create($this->validFileData, $options);
 
         $this->assertInstanceOf(ErrorFileUpload::class, $upload);
-        $this->assertStringContainsString('extension jpg is not allowed', $upload->message);
+        $this->assertStringContainsString('extension jpg is not allowed', (string) $upload->message);
     }
 
     public function testIsImage(): void

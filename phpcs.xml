@@ -37,6 +37,9 @@
         <exclude name="SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed"/>
         <exclude name="SlevomatCodingStandard.PHP.RequireExplicitAssertion.RequiredExplicitAssertion"/>
         <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingNativeTypeHint" />
+        <exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat" />
+        <exclude name="Squiz.Arrays.ArrayDeclaration.KeySpecified" />
+        <exclude name="Squiz.Arrays.ArrayDeclaration.MultiLineNotAllowed" />
     </rule>
     <!-- Additional Rules -->
     <rule ref="SlevomatCodingStandard.Commenting.DocCommentSpacing">

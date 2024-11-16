@@ -22,12 +22,13 @@ use const PATHINFO_EXTENSION;
  *   allowedExtensions?: list<string>
  * }
  * @psalm-immutable
+ * @psalm-suppress PossiblyUnusedProperty
  */
 abstract class AbstractFileUpload
 {
     public string $name;
     public string $type;
-    public int $size;
+    public int $size = 0;
     public string $tmpName;
     public int $error;
     public string|null $extension;

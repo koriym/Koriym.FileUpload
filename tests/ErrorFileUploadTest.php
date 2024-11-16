@@ -29,7 +29,7 @@ class ErrorFileUploadTest extends TestCase
     {
         $upload = new ErrorFileUpload($this->fileData);
 
-        $this->assertStringContainsString('upload_max_filesize', $upload->message);
+        $this->assertStringContainsString('upload_max_filesize', (string) $upload->message);
     }
 
     public function testCustomErrorMessage(): void

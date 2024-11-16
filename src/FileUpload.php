@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Koriym\FileUpload;
 
+use function assert;
 use function in_array;
+use function is_string;
 use function move_uploaded_file;
 use function pathinfo;
 use function rename;
@@ -23,13 +25,9 @@ use const UPLOAD_ERR_OK;
  */
 class FileUpload extends AbstractFileUpload
 {
-    /**
-     * @param UploadedFile      $fileData
-     * @param ValidationOptions $validationOptions
-     */
+    /** @param UploadedFile $fileData */
     private function __construct(
         array $fileData,
-        private array $validationOptions = [],
     ) {
         parent::__construct($fileData);
     }
@@ -55,6 +53,9 @@ class FileUpload extends AbstractFileUpload
             return new ErrorFileUpload($defaultData, 'Invalid file data structure');
         }
 
+        assert(is_string($fileData['type']));
+        /** @var UploadedFile $fileData */
+
         if ($fileData['error'] !== UPLOAD_ERR_OK) {
             return new ErrorFileUpload($fileData);
         }
@@ -76,6 +77,8 @@ class FileUpload extends AbstractFileUpload
             );
         }
 
+        /** @var UploadedFile $fileData */
+        assert(is_string($fileData['name']));
         $extension = pathinfo($fileData['name'], PATHINFO_EXTENSION);
         if (
             isset($validationOptions['allowedExtensions'])
@@ -87,7 +90,7 @@ class FileUpload extends AbstractFileUpload
             );
         }
 
-        return new self($fileData, $validationOptions);
+        return new self($fileData);
     }
 
     /**
@@ -98,7 +101,7 @@ class FileUpload extends AbstractFileUpload
      *
      * @see https://www.php.net/manual/function.move-uploaded-file.php
      * @see https://www.php.net/manual/function.rename.php
-     * @psalm-external-mutation-free
+     * @psalm-suppress ImpureFunctionCall
      */
     public function move(string $destination): bool
     {
@@ -109,7 +112,6 @@ class FileUpload extends AbstractFileUpload
         return move_uploaded_file($this->tmpName, $destination); // @codeCoverageIgnore
     }
 
-    /** @psalm-pure */
     public function isImage(): bool
     {
         return str_starts_with($this->type, 'image/');

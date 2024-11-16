@@ -1,6 +1,6 @@
 # FileUpload
 
-Immutable file upload value object
+Type-safe file upload handling with immutable value objects
 
 ## Installation
 

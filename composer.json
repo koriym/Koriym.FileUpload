@@ -1,6 +1,6 @@
 {
     "name": "koriym/file-upload",
-    "description": "",
+    "description": "Type-safe file upload handling with immutable value objects",
     "license": "MIT",
     "authors": [
         {
@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "php": "^8.0"
+        "php": "^8.1"
     },
     "require-dev": {
         "bamarni/composer-bin-plugin": "^1.8",

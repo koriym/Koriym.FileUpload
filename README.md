@@ -1,6 +1,6 @@
 # Koriym.FileUpload
 
-Type-safe file upload handling with immutable value objects
+Type-safe file upload handling with immutable value objects.
 
 ## Installation
 
@@ -12,7 +12,7 @@ composer require koriym/file-upload
 
 ```php
 $upload = FileUpload::create($_FILES['upload'], [
-    'maxSize' => 5 * 1024 * 1024,
+    'maxSize' => 5 * 1024 * 1024,          // 5MB
     'allowedTypes' => ['image/jpeg', 'image/png'],
     'allowedExtensions' => ['jpg', 'jpeg', 'png']
 ]);
@@ -39,7 +39,6 @@ public ?string $extension; // File extension
 ```
 
 Additionally, `ErrorFileUpload` has:
-
 ```php
 public ?string $message;   // Error message
 ```
@@ -47,37 +46,33 @@ public ?string $message;   // Error message
 ## Validation Options
 
 You can pass the following validation options to `create()`:
-
 - `maxSize`: Maximum file size in bytes
 - `allowedTypes`: Array of allowed MIME types
 - `allowedExtensions`: Array of allowed file extensions
 
 ## Testing
 
-The `move()` method behaves differently in CLI and web environments:
-- In web environment: Uses `move_uploaded_file()` for security
-- In CLI environment (testing): Uses `rename()` for testability
+The library provides a `toArray()` method to convert a FileUpload object back to `$_FILES` format array, which is useful for creating test stubs:
 
 ```php
-// Test environment
 $upload = FileUpload::create([
     'name' => 'test.jpg',
     'type' => 'image/jpeg',
     'size' => 1024,
-    'tmp_name' => '/path/to/temp/file',
+    'tmp_name' => '/tmp/test',
     'error' => UPLOAD_ERR_OK
 ]);
 
-$result = $upload->move('./uploads/test.jpg');
+$fileData = $upload->toArray();  // Returns $_FILES format array
 ```
 
-## Requirements
+The `move()` method behaves differently in CLI and web environments:
+- In web environment: Uses `move_uploaded_file()` for security
+- In CLI environment (testing): Uses `rename()` for testability
 
-- PHP 8.1+
+## Similar Libraries
 
-## License
-
-MIT
+Both Symfony HttpFoundation and Laravel provide file upload handling as part of their frameworks. While these frameworks offer more comprehensive features including storage abstraction and integration with their ecosystems, Koriym.FileUpload takes a more focused approach by providing a lightweight, framework-independent solution that transforms PHP's native $_FILES array into type-safe immutable objects.
 
 ## Additional Information
 

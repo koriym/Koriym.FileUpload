@@ -96,8 +96,8 @@ $fileData = $upload->toArray();  // Returns $_FILES format array
 For more realistic testing scenarios, you can create a FileUpload instance directly from a file:
 
 ```php
-// Create from actual image file
-$upload = FileUpload::fromFile('/path/to/test/image.jpg');
+// Place test files in your project's tests/fixtures directory
+$upload = FileUpload::fromFile(__DIR__ . '/fixtures/test-image.jpg');
 
 // Create with validation
 $upload = FileUpload::fromFile('/path/to/test/doc.pdf', [

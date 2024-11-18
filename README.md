@@ -7,6 +7,12 @@
 
 Type-safe file upload handling with immutable value objects.
 
+## Motivation
+
+Testing file uploads in PHP applications is traditionally complex and time-consuming. It often requires setting up a built-in web server, making HTTP requests, and managing multipart form data. This approach leads to slow, unreliable tests that are difficult to debug and maintain, especially in CI environments.
+
+This library simplifies both the handling of file uploads and their testing. Instead of dealing with PHP's native `$_FILES` array directly, you work with immutable value objects that provide type safety and early validation. For testing, rather than simulating HTTP file uploads, you can create test instances directly from files on your filesystem. This approach makes tests faster, more reliable, and easier to debug while still testing real-world scenarios with actual file types and contents.
+
 ## Installation
 
 ```bash

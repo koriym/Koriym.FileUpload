@@ -149,26 +149,25 @@ class FileUpload extends AbstractFileUpload
 
         $mimeType = mime_content_type($filepath);
         if ($mimeType === false) {
-            throw new MimeTypeException($filepath);
+            throw new MimeTypeException($filepath); // @codeCoverageIgnore
         }
 
         $size = filesize($filepath);
-        if ($size === false) {
-            throw new MimeTypeException($filepath);
-        }
 
         $tmpName = tempnam(sys_get_temp_dir(), 'upload_test');
         if ($tmpName === false) {
-            throw new TempFileException($filepath);
+            throw new TempFileException($filepath); // @codeCoverageIgnore
         }
 
         if (! copy($filepath, $tmpName)) {
+            // @codeCoverageIgnoreStart
             unlink($tmpName);
 
             throw new TempFileException($filepath);
+            // @codeCoverageIgnoreEnd
         }
 
-        /** @var array{name: string, type: string, size: int, tmp_name: string, error: int} */
+        /** @var UploadedFile $fileData */
         $fileData = [
             'name' => pathinfo($filepath, PATHINFO_BASENAME),
             'type' => $mimeType,

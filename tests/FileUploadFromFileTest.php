@@ -6,8 +6,6 @@ namespace Koriym\FileUpload;
 
 use Koriym\FileUpload\Exception\FileNotFoundException;
 use PHPUnit\Framework\TestCase;
-
-use function base64_decode;
 use function file_put_contents;
 use function sys_get_temp_dir;
 use function tempnam;
@@ -51,8 +49,10 @@ class FileUploadFromFileTest extends TestCase
     public function testFromFileEmpty(): void
     {
         $upload = FileUpload::fromFile($this->emptyFilePath);
+
         $this->assertInstanceOf(FileUpload::class, $upload);
         $this->assertSame(0, $upload->size);
+        $this->assertSame('application/x-empty', $upload->type);
         @unlink($upload->tmpName);
     }
 
@@ -61,7 +61,7 @@ class FileUploadFromFileTest extends TestCase
         $validationOptions = [
             'maxSize' => 1024 * 1024,
             'allowedTypes' => ['image/jpeg'],
-            'allowedExtensions' => ['jpg'],
+            'allowedExtensions' => ['jpg']
         ];
 
         $upload = FileUpload::fromFile($this->testImagePath, $validationOptions);
@@ -72,7 +72,7 @@ class FileUploadFromFileTest extends TestCase
     public function testFromFileWithValidationFailure(): void
     {
         $validationOptions = [
-            'allowedTypes' => ['application/pdf'],
+            'allowedTypes' => ['application/pdf']
         ];
 
         $upload = FileUpload::fromFile($this->testTextPath, $validationOptions);

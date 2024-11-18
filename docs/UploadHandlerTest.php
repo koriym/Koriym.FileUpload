@@ -23,9 +23,10 @@ class UploadHandlerTest extends TestCase
         $upload = FileUpload::fromFile(__DIR__ . '/fixtures/valid-image.jpg');
         $_FILES['upload'] = $upload->toArray();
 
-        $handler = new UploadHandler();
-        $result = $handler->handleUpload();
+        $handler = new YourUploadHandler();
 
+        // Test your code that depends on $_FILES
+        $result = $handler->handleUpload();
         $this->assertFileExists('/path/to/uploads/valid-image.jpg');
         $this->assertEquals('image/jpeg', $result->getContentType());
         $this->assertGreaterThan(0, $result->getSize());
@@ -36,7 +37,7 @@ class UploadHandlerTest extends TestCase
         $upload = FileUpload::fromFile(__DIR__ . '/fixtures/invalid.exe');
         $_FILES['upload'] = $upload->toArray();
 
-        $handler = new UploadHandler();
+        $handler = new YourUploadHandler();
 
         $this->expectException(InvalidFileTypeException::class);
         $handler->handleUpload();

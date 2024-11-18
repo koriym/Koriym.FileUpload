@@ -4,15 +4,25 @@ declare(strict_types=1);
 
 namespace Koriym\FileUpload;
 
+use Koriym\FileUpload\Exception\FileUploadException;
+
 use function assert;
+use function copy;
+use function file_exists;
+use function filesize;
 use function in_array;
 use function is_string;
+use function mime_content_type;
 use function move_uploaded_file;
 use function pathinfo;
 use function rename;
 use function sprintf;
 use function str_starts_with;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
 
+use const PATHINFO_BASENAME;
 use const PATHINFO_EXTENSION;
 use const PHP_SAPI;
 use const UPLOAD_ERR_NO_FILE;
@@ -115,5 +125,54 @@ class FileUpload extends AbstractFileUpload
     public function isImage(): bool
     {
         return str_starts_with($this->type, 'image/');
+    }
+
+    /**
+     * Create a FileUpload instance from an actual file for testing
+     *
+     * @param string            $filepath          Path to the source file
+     * @param ValidationOptions $validationOptions Optional validation options
+     *
+     * @throws FileUploadException If the file doesn't exist or can't be accessed.
+     */
+    public static function fromFile(
+        string $filepath,
+        array $validationOptions = [],
+    ): self|ErrorFileUpload {
+        if (! file_exists($filepath)) {
+            throw new FileUploadException(sprintf('File not found: %s', $filepath));
+        }
+
+        $mimeType = mime_content_type($filepath);
+        if ($mimeType === false) {
+            throw new FileUploadException(sprintf('Could not determine MIME type for file: %s', $filepath));
+        }
+
+        $size = filesize($filepath);
+        if ($size === false) {
+            throw new FileUploadException(sprintf('Could not determine file size: %s', $filepath));
+        }
+
+        $tmpName = tempnam(sys_get_temp_dir(), 'upload_test');
+        if ($tmpName === false) {
+            throw new FileUploadException('Failed to create temporary file');
+        }
+
+        if (! copy($filepath, $tmpName)) {
+            unlink($tmpName);
+
+            throw new FileUploadException(sprintf('Failed to copy file to temporary location: %s', $filepath));
+        }
+
+        /** @var array{name: string, type: string, size: int, tmp_name: string, error: int} */
+        $fileData = [
+            'name' => pathinfo($filepath, PATHINFO_BASENAME),
+            'type' => $mimeType,
+            'size' => $size,
+            'tmp_name' => $tmpName,
+            'error' => UPLOAD_ERR_OK,
+        ];
+
+        return self::create($fileData, $validationOptions);
     }
 }

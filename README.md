@@ -112,6 +112,34 @@ Note: The `move()` method behaves differently in CLI and web environments:
 - In web environment: Uses `move_uploaded_file()` for security
 - In CLI environment (testing): Uses `rename()` for testability
 
+## Testing Tips
+
+### Testing Code That Depends on $_FILES
+
+When testing code that depends on $_FILES, you can use the combination of `fromFile()` and `toArray()`:
+
+```php
+// Setup test file upload
+$upload = FileUpload::fromFile('/path/to/test/image.jpg');
+$fileData = $upload->toArray();
+
+// Backup current $_FILES state if needed
+$backupFiles = $_FILES;
+
+try {
+    // Simulate uploaded file in $_FILES
+    $_FILES['upload'] = $fileData;
+    
+    // Test your code that depends on $_FILES
+    $result = $yourCode->handleUpload();
+    
+    // Assert results
+    $this->assertTrue($result);
+} finally {
+    // Restore original $_FILES state
+    $_FILES = $backupFiles;
+}
+
 ## Similar Libraries
 
 Both Symfony HttpFoundation and Laravel provide file upload handling as part of their frameworks. While these frameworks offer more comprehensive features including storage abstraction and integration with their ecosystems, Koriym.FileUpload takes a more focused approach by providing a lightweight, framework-independent solution that transforms PHP's native $_FILES array into type-safe immutable objects.

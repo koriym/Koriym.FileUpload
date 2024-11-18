@@ -116,29 +116,9 @@ Note: The `move()` method behaves differently in CLI and web environments:
 
 ### Testing Code That Depends on $_FILES
 
-When testing code that depends on $_FILES, you can use the combination of `fromFile()` and `toArray()`:
+When testing code that depends on $_FILES, you can use the combination of `fromFile()` and `toArray()` to create controlled, reproducible tests without the complexity of setting up actual HTTP file uploads:
 
-```php
-// Setup test file upload
-$upload = FileUpload::fromFile('/path/to/test/image.jpg');
-$fileData = $upload->toArray();
-
-// Backup current $_FILES state if needed
-$backupFiles = $_FILES;
-
-try {
-    // Simulate uploaded file in $_FILES
-    $_FILES['upload'] = $fileData;
-    
-    // Test your code that depends on $_FILES
-    $result = $yourCode->handleUpload();
-    
-    // Assert results
-    $this->assertTrue($result);
-} finally {
-    // Restore original $_FILES state
-    $_FILES = $backupFiles;
-}
+See the example in [docs/UploadHandlerTest.php](docs/UploadHandlerTest.php).
 
 ## Similar Libraries
 

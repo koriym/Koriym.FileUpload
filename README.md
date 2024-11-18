@@ -5,7 +5,6 @@
 [![Psalm Level](https://shepherd.dev/github/koriym/Koriym.FileUpload/level.svg)](https://shepherd.dev/github/koriym/Koriym.FileUpload)
 [![Continuous Integration](https://github.com/koriym/Koriym.FileUpload/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/koriym/Koriym.FileUpload/actions/workflows/continuous-integration.yml)
 
-
 Type-safe file upload handling with immutable value objects.
 
 ## Installation
@@ -16,6 +15,7 @@ composer require koriym/file-upload
 
 ## Usage
 
+### From $_FILES
 ```php
 $upload = FileUpload::create($_FILES['upload'], [
     'maxSize' => 5 * 1024 * 1024,          // 5MB
@@ -28,6 +28,19 @@ match (true) {
         ? 'Upload successful'
         : 'Failed to move file',
     $upload instanceof ErrorFileUpload => 'Error: ' . $upload->message,
+};
+```
+
+### From File Path (for Testing)
+```php
+$upload = FileUpload::fromFile('/path/to/image.jpg', [
+    'maxSize' => 5 * 1024 * 1024,
+    'allowedTypes' => ['image/jpeg', 'image/png']
+]);
+
+match (true) {
+    $upload instanceof FileUpload => 'File validated successfully',
+    $upload instanceof ErrorFileUpload => 'Validation error: ' . $upload->message,
 };
 ```
 
@@ -51,13 +64,14 @@ public ?string $message;   // Error message
 
 ## Validation Options
 
-You can pass the following validation options to `create()`:
+You can pass the following validation options to both `create()` and `fromFile()`:
 - `maxSize`: Maximum file size in bytes
 - `allowedTypes`: Array of allowed MIME types
 - `allowedExtensions`: Array of allowed file extensions
 
 ## Testing
 
+### Using toArray()
 The library provides a `toArray()` method to convert a FileUpload object back to `$_FILES` format array, which is useful for creating test stubs:
 
 ```php
@@ -72,7 +86,23 @@ $upload = FileUpload::create([
 $fileData = $upload->toArray();  // Returns $_FILES format array
 ```
 
-The `move()` method behaves differently in CLI and web environments:
+### Using fromFile()
+For more realistic testing scenarios, you can create a FileUpload instance directly from a file:
+
+```php
+// Create from actual image file
+$upload = FileUpload::fromFile('/path/to/test/image.jpg');
+
+// Create with validation
+$upload = FileUpload::fromFile('/path/to/test/doc.pdf', [
+    'maxSize' => 1024 * 1024,
+    'allowedTypes' => ['application/pdf']
+]);
+```
+
+This is particularly useful when you want to test with real files and MIME types.
+
+Note: The `move()` method behaves differently in CLI and web environments:
 - In web environment: Uses `move_uploaded_file()` for security
 - In CLI environment (testing): Uses `rename()` for testability
 

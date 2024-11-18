@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Koriym\FileUpload;
 
-use Koriym\FileUpload\Exception\FileUploadException;
+use Koriym\FileUpload\Exception\FileNotFoundException;
+use Koriym\FileUpload\Exception\MimeTypeException;
+use Koriym\FileUpload\Exception\TempFileException;
 
 use function assert;
 use function copy;
@@ -133,35 +135,37 @@ class FileUpload extends AbstractFileUpload
      * @param string            $filepath          Path to the source file
      * @param ValidationOptions $validationOptions Optional validation options
      *
-     * @throws FileUploadException If the file doesn't exist or can't be accessed.
+     * @throws FileNotFoundException
+     * @throws MimeTypeException
+     * @throws TempFileException
      */
     public static function fromFile(
         string $filepath,
         array $validationOptions = [],
     ): self|ErrorFileUpload {
         if (! file_exists($filepath)) {
-            throw new FileUploadException(sprintf('File not found: %s', $filepath));
+            throw new FileNotFoundException($filepath);
         }
 
         $mimeType = mime_content_type($filepath);
         if ($mimeType === false) {
-            throw new FileUploadException(sprintf('Could not determine MIME type for file: %s', $filepath));
+            throw new MimeTypeException($filepath);
         }
 
         $size = filesize($filepath);
         if ($size === false) {
-            throw new FileUploadException(sprintf('Could not determine file size: %s', $filepath));
+            throw new MimeTypeException($filepath);
         }
 
         $tmpName = tempnam(sys_get_temp_dir(), 'upload_test');
         if ($tmpName === false) {
-            throw new FileUploadException('Failed to create temporary file');
+            throw new TempFileException($filepath);
         }
 
         if (! copy($filepath, $tmpName)) {
             unlink($tmpName);
 
-            throw new FileUploadException(sprintf('Failed to copy file to temporary location: %s', $filepath));
+            throw new TempFileException($filepath);
         }
 
         /** @var array{name: string, type: string, size: int, tmp_name: string, error: int} */

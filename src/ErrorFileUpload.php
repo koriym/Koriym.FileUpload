@@ -37,6 +37,8 @@ final class ErrorFileUpload extends AbstractFileUpload
     ) {
         parent::__construct($fileData);
 
-        $this->message = $message ?? self::ERROR_MESSAGES[$this->error] ?? null;
+        $this->message = $message !== null && $message !== ''
+            ? $message
+            : (self::ERROR_MESSAGES[$this->error] ?? null);
     }
 }

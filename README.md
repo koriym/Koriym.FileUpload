@@ -122,6 +122,39 @@ When testing code that depends on $_FILES, you can use the combination of `fromF
 
 See the example in [docs/UploadHandlerTest.php](docs/UploadHandlerTest.php).
 
+## Security Considerations
+
+### File Upload Security
+
+The `move()` method moves the uploaded file to the specified destination without additional validation. **Your application is responsible for:**
+
+- Validating the destination path (prevent directory traversal)
+- Checking for existing files (prevent unintended overwrites)
+- Setting appropriate file permissions
+- Sanitizing user-provided filenames
+
+**Example: Safe file handling**
+
+```php
+$upload = FileUpload::create($_FILES['file']);
+
+if ($upload instanceof FileUpload) {
+    // Sanitize filename
+    $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '', $upload->name);
+
+    // Ensure destination directory exists and is writable
+    $uploadDir = '/var/www/uploads';
+    $destination = $uploadDir . '/' . $safeName;
+
+    // Check if file already exists
+    if (file_exists($destination)) {
+        $destination = $uploadDir . '/' . uniqid() . '_' . $safeName;
+    }
+
+    $upload->move($destination);
+}
+```
+
 ## Similar Libraries
 
 Both Symfony HttpFoundation and Laravel provide file upload handling as part of their frameworks. While these frameworks offer more comprehensive features including storage abstraction and integration with their ecosystems, Koriym.FileUpload takes a more focused approach by providing a lightweight, framework-independent solution that transforms PHP's native $_FILES array into type-safe immutable objects.

@@ -120,7 +120,7 @@ Note: The `move()` method behaves differently in CLI and web environments:
 
 When testing code that depends on $_FILES, you can use the combination of `fromFile()` and `toArray()` to create controlled, reproducible tests without the complexity of setting up actual HTTP file uploads:
 
-See the example in [docs/UploadHandlerTest.php](docs/UploadHandlerTest.php).
+See the working example in [tests/Example/UploadHandlerTest.php](tests/Example/UploadHandlerTest.php).
 
 ## Security Considerations
 

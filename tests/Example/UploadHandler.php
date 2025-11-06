@@ -6,7 +6,6 @@ namespace Koriym\FileUpload\Example;
 
 use Koriym\FileUpload\ErrorFileUpload;
 use Koriym\FileUpload\FileUpload;
-use RuntimeException;
 
 use function basename;
 use function is_dir;
@@ -19,6 +18,11 @@ use function mkdir;
  */
 final class UploadHandler
 {
+    /**
+     * @param string       $uploadDirectory Upload destination directory
+     * @param positive-int $maxSize         Maximum file size in bytes
+     * @param list<string> $allowedTypes    Allowed MIME types
+     */
     public function __construct(
         private readonly string $uploadDirectory,
         private readonly int $maxSize = 5 * 1024 * 1024, // 5MB
@@ -26,9 +30,7 @@ final class UploadHandler
     ) {
     }
 
-    /**
-     * @param array<string, mixed> $fileData $_FILES array element
-     */
+    /** @param array<string, mixed> $fileData $_FILES array element */
     public function handleUpload(array $fileData): UploadResult
     {
         $upload = FileUpload::create($fileData, [
@@ -59,19 +61,4 @@ final class UploadHandler
             size: $upload->size,
         );
     }
-}
-
-final class UploadResult
-{
-    public function __construct(
-        public readonly string $path,
-        public readonly string $originalName,
-        public readonly string $mimeType,
-        public readonly int $size,
-    ) {
-    }
-}
-
-final class UploadException extends RuntimeException
-{
 }

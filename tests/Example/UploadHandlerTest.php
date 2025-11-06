@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Koriym\FileUpload\Example;
 
-require_once __DIR__ . '/UploadHandler.php';
-
 use Koriym\FileUpload\FileUpload;
 use PHPUnit\Framework\TestCase;
 
+use function base64_decode;
 use function file_exists;
 use function file_put_contents;
+use function glob;
 use function is_dir;
 use function mkdir;
+use function rmdir;
 use function sys_get_temp_dir;
+use function uniqid;
 use function unlink;
 
 /**

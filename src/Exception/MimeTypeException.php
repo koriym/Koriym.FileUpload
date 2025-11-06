@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace Koriym\FileUpload\Exception;
 
-class MimeTypeException extends FileUploadException
+final class MimeTypeException extends FileUploadException
 {
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Koriym\FileUpload;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 use function file_put_contents;
@@ -76,7 +77,7 @@ class FileUploadTest extends TestCase
     }
 
     /** @return array<ValidationOptions> */
-    public function validationOptionsProvider(): array
+    public static function validationOptionsProvider(): array
     {
         return [
             'max size' => ['options' => ['maxSize' => 500]],
@@ -85,11 +86,8 @@ class FileUploadTest extends TestCase
         ];
     }
 
-    /**
-     * @param ValidationOptions $options
-     *
-     * @dataProvider validationOptionsProvider
-     */
+    /** @param ValidationOptions $options */
+    #[DataProvider('validationOptionsProvider')]
     public function testValidationFails(array $options): void
     {
         $upload = FileUpload::create($this->validFileData, $options);

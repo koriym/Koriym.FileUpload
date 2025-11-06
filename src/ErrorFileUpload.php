@@ -16,8 +16,10 @@ use const UPLOAD_ERR_PARTIAL;
  * @psalm-import-type UploadedFile from AbstractFileUpload
  * @psalm-immutable
  */
-class ErrorFileUpload extends AbstractFileUpload
+final class ErrorFileUpload extends AbstractFileUpload
 {
+    public string|null $message;
+
     private const ERROR_MESSAGES = [
         UPLOAD_ERR_INI_SIZE => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
         UPLOAD_ERR_FORM_SIZE => 'The uploaded file exceeds the MAX_FILE_SIZE directive in the HTML form',
@@ -31,12 +33,10 @@ class ErrorFileUpload extends AbstractFileUpload
     /** @param UploadedFile $fileData */
     public function __construct(
         array $fileData,
-        public string|null $message = null,
+        string|null $message = null,
     ) {
         parent::__construct($fileData);
 
-        if ($this->message === null && isset(self::ERROR_MESSAGES[$this->error])) {
-            $this->message = self::ERROR_MESSAGES[$this->error];
-        }
+        $this->message = $message ?? self::ERROR_MESSAGES[$this->error] ?? null;
     }
 }

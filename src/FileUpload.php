@@ -8,12 +8,10 @@ use Koriym\FileUpload\Exception\FileNotFoundException;
 use Koriym\FileUpload\Exception\MimeTypeException;
 use Koriym\FileUpload\Exception\TempFileException;
 
-use function assert;
 use function copy;
 use function file_exists;
 use function filesize;
 use function in_array;
-use function is_string;
 use function mime_content_type;
 use function move_uploaded_file;
 use function pathinfo;
@@ -35,7 +33,7 @@ use const UPLOAD_ERR_OK;
  * @psalm-import-type ValidationOptions from AbstractFileUpload
  * @psalm-immutable
  */
-class FileUpload extends AbstractFileUpload
+final class FileUpload extends AbstractFileUpload
 {
     /** @param UploadedFile $fileData */
     private function __construct(
@@ -65,7 +63,6 @@ class FileUpload extends AbstractFileUpload
             return new ErrorFileUpload($defaultData, 'Invalid file data structure');
         }
 
-        assert(is_string($fileData['type']));
         /** @var UploadedFile $fileData */
 
         if ($fileData['error'] !== UPLOAD_ERR_OK) {
@@ -79,19 +76,32 @@ class FileUpload extends AbstractFileUpload
             );
         }
 
+        /** @var string $type */
+        $type = $fileData['type'];
+
         if (
             isset($validationOptions['allowedTypes'])
-            && ! in_array($fileData['type'], $validationOptions['allowedTypes'], true)
+            && ! in_array($type, $validationOptions['allowedTypes'], true)
         ) {
+            /** @var UploadedFile $validatedFileData */
+            $validatedFileData = [
+                'name' => $fileData['name'],
+                'type' => $type,
+                'size' => $fileData['size'],
+                'tmp_name' => $fileData['tmp_name'],
+                'error' => $fileData['error'],
+            ];
+
             return new ErrorFileUpload(
-                $fileData,
-                sprintf('File type %s is not allowed', $fileData['type']),
+                $validatedFileData,
+                sprintf('File type %s is not allowed', $type),
             );
         }
 
         /** @var UploadedFile $fileData */
-        assert(is_string($fileData['name']));
-        $extension = pathinfo($fileData['name'], PATHINFO_EXTENSION);
+        /** @var string $name */
+        $name = $fileData['name'];
+        $extension = pathinfo($name, PATHINFO_EXTENSION);
         if (
             isset($validationOptions['allowedExtensions'])
             && ! in_array($extension, $validationOptions['allowedExtensions'], true)

@@ -28,7 +28,7 @@ abstract class AbstractFileUpload
 {
     public string $name;
     public string $type;
-    public int $size = 0;
+    public int $size;
     public string $tmpName;
     public int $error;
     public string|null $extension;

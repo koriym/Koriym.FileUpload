@@ -23,11 +23,12 @@ composer require koriym/file-upload
 
 ### From $_FILES
 ```php
+// Type-safe with union return type
 $upload = FileUpload::create($_FILES['upload'], [
     'maxSize' => 5 * 1024 * 1024,          // 5MB
     'allowedTypes' => ['image/jpeg', 'image/png'],
     'allowedExtensions' => ['jpg', 'jpeg', 'png']
-]);
+]); // Returns FileUpload|ErrorFileUpload
 
 match (true) {
     $upload instanceof FileUpload => $upload->move('./uploads/' . $upload->name)
@@ -39,10 +40,11 @@ match (true) {
 
 ### From File Path (for Testing)
 ```php
+// Type-safe with union return type
 $upload = FileUpload::fromFile('/path/to/image.jpg', [
     'maxSize' => 5 * 1024 * 1024,
     'allowedTypes' => ['image/jpeg', 'image/png']
-]);
+]); // Returns FileUpload|ErrorFileUpload
 
 match (true) {
     $upload instanceof FileUpload => 'File validated successfully',

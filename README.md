@@ -23,11 +23,12 @@ composer require koriym/file-upload
 
 ### From $_FILES
 ```php
+// Type-safe with union return type
 $upload = FileUpload::create($_FILES['upload'], [
     'maxSize' => 5 * 1024 * 1024,          // 5MB
     'allowedTypes' => ['image/jpeg', 'image/png'],
     'allowedExtensions' => ['jpg', 'jpeg', 'png']
-]);
+]); // Returns FileUpload|ErrorFileUpload
 
 match (true) {
     $upload instanceof FileUpload => $upload->move('./uploads/' . $upload->name)
@@ -39,10 +40,11 @@ match (true) {
 
 ### From File Path (for Testing)
 ```php
+// Type-safe with union return type
 $upload = FileUpload::fromFile('/path/to/image.jpg', [
     'maxSize' => 5 * 1024 * 1024,
     'allowedTypes' => ['image/jpeg', 'image/png']
-]);
+]); // Returns FileUpload|ErrorFileUpload
 
 match (true) {
     $upload instanceof FileUpload => 'File validated successfully',
@@ -118,7 +120,40 @@ Note: The `move()` method behaves differently in CLI and web environments:
 
 When testing code that depends on $_FILES, you can use the combination of `fromFile()` and `toArray()` to create controlled, reproducible tests without the complexity of setting up actual HTTP file uploads:
 
-See the example in [docs/UploadHandlerTest.php](docs/UploadHandlerTest.php).
+See the working example in [tests/Example/UploadHandlerTest.php](tests/Example/UploadHandlerTest.php).
+
+## Security Considerations
+
+### File Upload Security
+
+The `move()` method moves the uploaded file to the specified destination without additional validation. **Your application is responsible for:**
+
+- Validating the destination path (prevent directory traversal)
+- Checking for existing files (prevent unintended overwrites)
+- Setting appropriate file permissions
+- Sanitizing user-provided filenames
+
+### Example: Safe file handling
+
+```php
+$upload = FileUpload::create($_FILES['file']);
+
+if ($upload instanceof FileUpload) {
+    // Sanitize filename
+    $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '', $upload->name);
+
+    // Ensure destination directory exists and is writable
+    $uploadDir = '/var/www/uploads';
+    $destination = $uploadDir . '/' . $safeName;
+
+    // Check if file already exists
+    if (file_exists($destination)) {
+        $destination = $uploadDir . '/' . uniqid() . '_' . $safeName;
+    }
+
+    $upload->move($destination);
+}
+```
 
 ## Similar Libraries
 

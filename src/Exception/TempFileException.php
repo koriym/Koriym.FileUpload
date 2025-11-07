@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace Koriym\FileUpload\Exception;
 
-class TempFileException extends FileUploadException
+final class TempFileException extends FileUploadException
 {
 }

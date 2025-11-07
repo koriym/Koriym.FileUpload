@@ -133,7 +133,7 @@ The `move()` method moves the uploaded file to the specified destination without
 - Setting appropriate file permissions
 - Sanitizing user-provided filenames
 
-**Example: Safe file handling**
+### Example: Safe file handling
 
 ```php
 $upload = FileUpload::create($_FILES['file']);

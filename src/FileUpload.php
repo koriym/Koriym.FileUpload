@@ -77,43 +77,10 @@ final class FileUpload extends AbstractFileUpload
             );
         }
 
-        /** @var string $type */
-        $type = $fileData['type'];
-
-        if (
-            isset($validationOptions['allowedTypes'])
-            && ! in_array($type, $validationOptions['allowedTypes'], true)
-        ) {
-            /** @var UploadedFile $validatedFileData */
-            $validatedFileData = [
-                'name' => $fileData['name'],
-                'type' => $type,
-                'size' => $fileData['size'],
-                'tmp_name' => $fileData['tmp_name'],
-                'error' => $fileData['error'],
-            ];
-
-            return new ErrorFileUpload(
-                $validatedFileData,
-                sprintf('File type %s is not allowed', $type),
-            );
-        }
-
-        // $fileData['type'] is the Content-Type sent by the client and proves nothing about
-        // the file itself, so also check the type detected from the uploaded bytes.
         if (isset($validationOptions['allowedTypes'])) {
-            /** @var string $tmpName */
-            $tmpName = $fileData['tmp_name'];
-            $detectedType = is_file($tmpName) ? mime_content_type($tmpName) : false;
-            if ($detectedType === false) {
-                return new ErrorFileUpload($fileData, 'Unable to detect the file type');
-            }
-
-            if (! in_array($detectedType, $validationOptions['allowedTypes'], true)) {
-                return new ErrorFileUpload(
-                    $fileData,
-                    sprintf('File type %s is not allowed', $detectedType),
-                );
+            $typeError = self::validateType($fileData, $validationOptions['allowedTypes']);
+            if ($typeError !== null) {
+                return $typeError;
             }
         }
 
@@ -132,6 +99,50 @@ final class FileUpload extends AbstractFileUpload
         }
 
         return new self($fileData);
+    }
+
+    /**
+     * @param UploadedFile $fileData
+     * @param list<string> $allowedTypes
+     */
+    private static function validateType(array $fileData, array $allowedTypes): ErrorFileUpload|null
+    {
+        /** @var string $type */
+        $type = $fileData['type'];
+
+        if (! in_array($type, $allowedTypes, true)) {
+            /** @var UploadedFile $validatedFileData */
+            $validatedFileData = [
+                'name' => $fileData['name'],
+                'type' => $type,
+                'size' => $fileData['size'],
+                'tmp_name' => $fileData['tmp_name'],
+                'error' => $fileData['error'],
+            ];
+
+            return new ErrorFileUpload(
+                $validatedFileData,
+                sprintf('File type %s is not allowed', $type),
+            );
+        }
+
+        // $fileData['type'] is the Content-Type sent by the client and proves nothing about
+        // the file itself, so also check the type detected from the uploaded bytes.
+        /** @var string $tmpName */
+        $tmpName = $fileData['tmp_name'];
+        $detectedType = is_file($tmpName) ? mime_content_type($tmpName) : false;
+        if ($detectedType === false) {
+            return new ErrorFileUpload($fileData, 'Unable to detect the file type');
+        }
+
+        if (! in_array($detectedType, $allowedTypes, true)) {
+            return new ErrorFileUpload(
+                $fileData,
+                sprintf('File type %s is not allowed', $detectedType),
+            );
+        }
+
+        return null;
     }
 
     /**

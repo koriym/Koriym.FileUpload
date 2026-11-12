@@ -131,30 +131,33 @@ The `move()` method moves the uploaded file to the specified destination without
 - Validating the destination path (prevent directory traversal)
 - Checking for existing files (prevent unintended overwrites)
 - Setting appropriate file permissions
-- Sanitizing user-provided filenames
+- Generating the stored filename on the server instead of using the user-provided filename
 - Restricting file extensions with `allowedExtensions` (or generating the stored filename yourself). A content-type check alone does not stop a file named `*.php` from being stored, and `$upload->type` / `isImage()` reflect the type sent by the client.
 
 ### Example: Safe file handling
 
 ```php
-$upload = FileUpload::create($_FILES['file']);
+$upload = FileUpload::create($_FILES['file'], [
+    'maxSize' => 5 * 1024 * 1024,
+    'allowedTypes' => ['image/jpeg', 'image/png', 'image/gif'],
+    // Always restrict extensions: a file named *.php with image content passes the type check
+    'allowedExtensions' => ['jpg', 'jpeg', 'png', 'gif'],
+]);
 
 if ($upload instanceof FileUpload) {
-    // Sanitize filename
-    $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '', $upload->name);
+    // Generate the stored filename on the server; never use the client-supplied name as a path.
+    // The extension has already been checked against allowedExtensions.
+    $filename = bin2hex(random_bytes(16)) . '.' . strtolower($upload->extension);
 
-    // Ensure destination directory exists and is writable
-    $uploadDir = '/var/www/uploads';
-    $destination = $uploadDir . '/' . $safeName;
+    // Store outside the document root (or where PHP is not executed)
+    $uploadDir = '/var/app/uploads';
+    $upload->move($uploadDir . '/' . $filename);
 
-    // Check if file already exists
-    if (file_exists($destination)) {
-        $destination = $uploadDir . '/' . uniqid() . '_' . $safeName;
-    }
-
-    $upload->move($destination);
+    // Keep $upload->name only as display metadata (e.g. in your database), not as a path
 }
 ```
+
+A complete example is in [tests/Example/UploadHandler.php](tests/Example/UploadHandler.php).
 
 ## Similar Libraries
 

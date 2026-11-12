@@ -8,6 +8,8 @@ use Koriym\FileUpload\FileUpload;
 use PHPUnit\Framework\TestCase;
 
 use function base64_decode;
+use function basename;
+use function copy;
 use function file_exists;
 use function file_put_contents;
 use function glob;
@@ -87,6 +89,32 @@ final class UploadHandlerTest extends TestCase
         $this->assertSame('test-image.jpg', $result->originalName);
         $this->assertSame('image/jpeg', $result->mimeType);
         $this->assertGreaterThan(0, $result->size);
+
+        // The stored filename is generated on the server, not taken from the client
+        $this->assertNotSame('test-image.jpg', basename($result->path));
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}\.jpg$/', basename($result->path));
+    }
+
+    public function testImageContentWithPhpExtensionIsRejected(): void
+    {
+        // A valid JPEG whose filename ends in .php passes the content-type check,
+        // but allowedExtensions rejects it
+        $phpNamedImage = $this->uploadDir . '_shell.php';
+        copy($this->fixturesDir . '/test-image.jpg', $phpNamedImage);
+
+        try {
+            $upload = FileUpload::fromFile($phpNamedImage);
+            $filesData = $upload->toArray();
+
+            $this->expectException(UploadException::class);
+            $this->expectExceptionMessage('File extension php is not allowed');
+
+            $this->handler->handleUpload($filesData);
+        } finally {
+            if (file_exists($phpNamedImage)) {
+                unlink($phpNamedImage);
+            }
+        }
     }
 
     public function testInvalidFileType(): void

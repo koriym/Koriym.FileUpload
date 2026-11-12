@@ -7,7 +7,9 @@ namespace Koriym\FileUpload;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+use function copy;
 use function file_put_contents;
+use function filesize;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -127,6 +129,64 @@ class FileUploadTest extends TestCase
 
         $this->assertInstanceOf(ErrorFileUpload::class, $upload);
         $this->assertStringContainsString('extension jpg is not allowed', (string) $upload->message);
+    }
+
+    public function testValidationAllowedTypesChecksFileContent(): void
+    {
+        // The client claims image/jpeg, but the uploaded bytes are PHP source.
+        $tmpFile = (string) tempnam(sys_get_temp_dir(), 'upload_test');
+        file_put_contents($tmpFile, "<?php\n// not an image\n");
+
+        /** @var UploadedFile */
+        $fileData = [
+            'name' => 'test.jpg',
+            'type' => 'image/jpeg',
+            'size' => (int) filesize($tmpFile),
+            'tmp_name' => $tmpFile,
+            'error' => UPLOAD_ERR_OK,
+        ];
+        /** @var ValidationOptions */
+        $options = ['allowedTypes' => ['image/jpeg']];
+
+        $upload = FileUpload::create($fileData, $options);
+        @unlink($tmpFile);
+
+        $this->assertInstanceOf(ErrorFileUpload::class, $upload);
+        $this->assertStringContainsString('type text/x-php is not allowed', (string) $upload->message);
+    }
+
+    public function testValidationAllowedTypesAcceptsMatchingContent(): void
+    {
+        $tmpFile = (string) tempnam(sys_get_temp_dir(), 'upload_test');
+        copy(__DIR__ . '/Example/fixtures/test-image.jpg', $tmpFile);
+
+        /** @var UploadedFile */
+        $fileData = [
+            'name' => 'test.jpg',
+            'type' => 'image/jpeg',
+            'size' => (int) filesize($tmpFile),
+            'tmp_name' => $tmpFile,
+            'error' => UPLOAD_ERR_OK,
+        ];
+        /** @var ValidationOptions */
+        $options = ['allowedTypes' => ['image/jpeg']];
+
+        $upload = FileUpload::create($fileData, $options);
+        @unlink($tmpFile);
+
+        $this->assertInstanceOf(FileUpload::class, $upload);
+    }
+
+    public function testValidationAllowedTypesWithMissingTempFile(): void
+    {
+        /** @var ValidationOptions */
+        $options = ['allowedTypes' => ['image/jpeg']];
+
+        // validFileData points at a tmp_name that does not exist
+        $upload = FileUpload::create($this->validFileData, $options);
+
+        $this->assertInstanceOf(ErrorFileUpload::class, $upload);
+        $this->assertStringContainsString('Unable to detect the file type', (string) $upload->message);
     }
 
     public function testIsImage(): void

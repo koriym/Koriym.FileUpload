@@ -74,7 +74,7 @@ public ?string $message;   // Error message
 
 You can pass the following validation options to both `create()` and `fromFile()`:
 - `maxSize`: Maximum file size in bytes
-- `allowedTypes`: Array of allowed MIME types
+- `allowedTypes`: Array of allowed MIME types. Both the client-supplied `type` and the type detected from the file content (`mime_content_type()`) must be in the list.
 - `allowedExtensions`: Array of allowed file extensions
 
 ## Testing
@@ -132,6 +132,7 @@ The `move()` method moves the uploaded file to the specified destination without
 - Checking for existing files (prevent unintended overwrites)
 - Setting appropriate file permissions
 - Sanitizing user-provided filenames
+- Restricting file extensions with `allowedExtensions` (or generating the stored filename yourself). A content-type check alone does not stop a file named `*.php` from being stored, and `$upload->type` / `isImage()` reflect the type sent by the client.
 
 ### Example: Safe file handling
 

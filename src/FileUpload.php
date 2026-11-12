@@ -12,6 +12,7 @@ use function copy;
 use function file_exists;
 use function filesize;
 use function in_array;
+use function is_file;
 use function mime_content_type;
 use function move_uploaded_file;
 use function pathinfo;
@@ -96,6 +97,24 @@ final class FileUpload extends AbstractFileUpload
                 $validatedFileData,
                 sprintf('File type %s is not allowed', $type),
             );
+        }
+
+        // $fileData['type'] is the Content-Type sent by the client and proves nothing about
+        // the file itself, so also check the type detected from the uploaded bytes.
+        if (isset($validationOptions['allowedTypes'])) {
+            /** @var string $tmpName */
+            $tmpName = $fileData['tmp_name'];
+            $detectedType = is_file($tmpName) ? mime_content_type($tmpName) : false;
+            if ($detectedType === false) {
+                return new ErrorFileUpload($fileData, 'Unable to detect the file type');
+            }
+
+            if (! in_array($detectedType, $validationOptions['allowedTypes'], true)) {
+                return new ErrorFileUpload(
+                    $fileData,
+                    sprintf('File type %s is not allowed', $detectedType),
+                );
+            }
         }
 
         /** @var UploadedFile $fileData */
